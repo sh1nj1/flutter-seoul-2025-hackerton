@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'src/config/gemini_config.dart';
+import 'src/config/openai_config.dart';
 import 'src/screens/canvas_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
-  if (!GeminiConfig.hasKey) {
-    debugPrint('Warning: GEMINI_API_KEY is not set. Icon generation will fail.');
+  if (!OpenAIConfig.hasKey) {
+    debugPrint('Warning: OPENAI_API_KEY is not set. Icon generation will fail.');
   }
   runApp(const CalmdownApp());
 }

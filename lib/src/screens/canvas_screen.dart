@@ -7,7 +7,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../canvas/drawing_canvas.dart';
 import '../canvas/stroke.dart';
-import '../config/gemini_config.dart';
+import '../config/openai_config.dart';
 import '../services/icon_generator.dart';
 
 class CanvasScreen extends StatefulWidget {
@@ -90,6 +90,12 @@ class _CanvasScreenState extends State<CanvasScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    _iconGenerator?.dispose();
+    super.dispose();
+  }
+
   void _startStroke(Offset position) {
     final Stroke stroke = Stroke(color: _selectedColor, width: _strokeWidth)
       ..addPoint(position);
@@ -137,8 +143,8 @@ class _CanvasScreenState extends State<CanvasScreen> {
   }
 
   Future<void> _handleGenerateIcon() async {
-    if (!GeminiConfig.hasKey) {
-      _showSnackBar('Gemini API 키를 설정한 뒤 다시 시도하세요.');
+    if (!OpenAIConfig.hasKey) {
+      _showSnackBar('OpenAI API 키를 설정한 뒤 다시 시도하세요.');
       return;
     }
     if (!_hasDrawing) {
