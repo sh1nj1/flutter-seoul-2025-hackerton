@@ -1,8 +1,8 @@
 # Hackathon Task Plan
 
 ## 1. Setup & Dependencies
-- Install required Flutter packages (`google_generative_ai`, optional `flutter_colorpicker`, `path_provider`) and configure API key storage (dotenv or secrets file ignored by VCS).
-- Wire environment loading inside `main.dart` so the Gemini key is available before API calls.
+- [x] Install required Flutter packages (`google_generative_ai`, optional `flutter_colorpicker`, `path_provider`) and configure API key storage (dotenv or secrets file ignored by VCS).
+- [x] Wire environment loading inside `main.dart` so the Gemini key is available before API calls.
 
 ## 2. Canvas Interface
 - Build single-screen `Scaffold` with custom drawing canvas: use `GestureDetector` + `CustomPainter` to capture and render strokes.
