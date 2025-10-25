@@ -2,24 +2,34 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
+import '../config/gemini_config.dart';
+import '../config/image_provider_config.dart';
 import '../config/openai_config.dart';
 
 class IconGenerator {
-  IconGenerator({http.Client? httpClient})
-      : _client = httpClient ?? http.Client();
+  IconGenerator({http.Client? httpClient, GenerativeModel? geminiModel})
+      : _client = httpClient ?? http.Client(),
+        _geminiModel = geminiModel;
 
   final http.Client _client;
+  GenerativeModel? _geminiModel;
 
   static const String _endpoint = 'https://api.openai.com/v1/images/edits';
-  static const String _model = 'gpt-image-1';
+  static const String _openAIModel = 'gpt-image-1';
+  static const String _geminiModelName = 'gemini-1.5-flash';
 
   Future<Uint8List> generateIcon({
     required String prompt,
     required Uint8List sketchBytes,
   }) async {
+    final ImageProviderType provider = ImageProviderConfig.provider;
+    if (provider == ImageProviderType.gemini) {
+      return _generateWithGemini(prompt: prompt, sketchBytes: sketchBytes);
+    }
     final String apiKey = OpenAIConfig.apiKey;
     if (apiKey.isEmpty) {
       throw StateError('Missing OpenAI API key.');
@@ -30,7 +40,7 @@ class IconGenerator {
       Uri.parse(_endpoint),
     )
       ..headers['Authorization'] = 'Bearer $apiKey'
-      ..fields['model'] = _model
+      ..fields['model'] = _openAIModel
       ..fields['prompt'] = prompt
       ..fields['n'] = '1'
       ..fields['size'] = '1024x1024'
@@ -78,6 +88,48 @@ class IconGenerator {
     }
 
     throw StateError('OpenAI response missing image content.');
+  }
+
+  Future<Uint8List> _generateWithGemini({
+    required String prompt,
+    required Uint8List sketchBytes,
+  }) async {
+    final String apiKey = GeminiConfig.apiKey;
+    if (apiKey.isEmpty) {
+      throw StateError('Missing Gemini API key.');
+    }
+
+    _geminiModel ??= GenerativeModel(
+      model: _geminiModelName,
+      apiKey: apiKey,
+      generationConfig: GenerationConfig(
+        responseMimeType: 'image/png',
+      ),
+    );
+
+    final Content content = Content.multi(<Part>[
+      TextPart(prompt),
+      DataPart('image/png', sketchBytes),
+    ]);
+
+    final GenerateContentResponse response =
+        await _geminiModel!.generateContent(<Content>[content]);
+
+    debugPrint('Gemini response: $response');
+
+    if (response.candidates == null) {
+      throw StateError('No candidates returned by Gemini.');
+    }
+
+    for (final Candidate candidate in response.candidates!) {
+      for (final Part part in candidate.content.parts) {
+        if (part is DataPart) {
+          return Uint8List.fromList(part.bytes);
+        }
+      }
+    }
+
+    throw StateError('Gemini did not return an image.');
   }
 
   void dispose() {

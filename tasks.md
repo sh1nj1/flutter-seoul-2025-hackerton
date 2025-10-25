@@ -1,8 +1,8 @@
 # Hackathon Task Plan
 
 ## 1. Setup & Dependencies
-- [x] Install required Flutter packages (`http`, optional `flutter_colorpicker`, `path_provider`) and configure API key storage (dotenv or secrets file ignored by VCS).
-- [x] Wire environment loading inside `main.dart` so the OpenAI key is available before API calls.
+- [x] Install required Flutter packages (`http`, `google_generative_ai`, optional `flutter_colorpicker`, `path_provider`) and configure API key storage (dotenv or secrets file ignored by VCS).
+- [x] Wire environment loading inside `main.dart` so the selected provider (OpenAI or Gemini) has access to its API key.
 
 ## 2. Canvas Interface
 - [x] Build single-screen `Scaffold` with custom drawing canvas: use `GestureDetector` + `CustomPainter` to capture and render strokes.
@@ -16,7 +16,7 @@
 
 ## 4. Icon Generation Workflow
 - [x] On "아이콘 만들기", open dialog with prefilled prompt template tied to current concept and allow edits.
-- [x] Capture canvas as PNG bytes via `ui.Image`/`PictureRecorder`, encode base64, and bundle with prompt for the OpenAI image edit request.
+- [x] Capture canvas as PNG bytes via `ui.Image`/`PictureRecorder`, encode base64, and bundle with prompt for the configured provider request.
 - [x] Show loading overlay while awaiting API; handle errors with retry messaging.
 
 ## 5. Result Handling
