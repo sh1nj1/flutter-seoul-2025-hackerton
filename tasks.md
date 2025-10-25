@@ -5,9 +5,9 @@
 - [x] Wire environment loading inside `main.dart` so the Gemini key is available before API calls.
 
 ## 2. Canvas Interface
-- Build single-screen `Scaffold` with custom drawing canvas: use `GestureDetector` + `CustomPainter` to capture and render strokes.
-- Structure drawing state (strokes, active color, brush size) with a lightweight `ChangeNotifier` or plain `StatefulWidget` variables for speed.
-- Implement "새로 만들기" to reset canvas state and clear any generated icon preview.
+- [x] Build single-screen `Scaffold` with custom drawing canvas: use `GestureDetector` + `CustomPainter` to capture and render strokes.
+- [x] Structure drawing state (strokes, active color, brush size) with a lightweight `ChangeNotifier` or plain `StatefulWidget` variables for speed.
+- [x] Implement "새로 만들기" to reset canvas state and clear any generated icon preview.
 
 ## 3. Color Selection & Tools
 - Add color picker dialog (predefined palette or `flutter_colorpicker`) that updates the active brush color.
