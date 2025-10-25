@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import '../canvas/drawing_canvas.dart';
 import '../canvas/stroke.dart';
@@ -15,6 +16,68 @@ class _CanvasScreenState extends State<CanvasScreen> {
   Stroke? _inProgress;
   Color _selectedColor = Colors.black;
   double _strokeWidth = 4;
+
+  Future<void> _selectColor() async {
+    Color tempColor = _selectedColor;
+    double tempWidth = _strokeWidth;
+    final bool? applied = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('색상 선택'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, void Function(void Function()) setDialogState) {
+              return SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    BlockPicker(
+                      pickerColor: tempColor,
+                      availableColors: _availableColors,
+                      onColorChanged: (Color color) {
+                        setDialogState(() {
+                          tempColor = color;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Text('브러시 두께: ${tempWidth.toStringAsFixed(0)}'),
+                    Slider(
+                      min: 1,
+                      max: 16,
+                      value: tempWidth,
+                      onChanged: (double value) {
+                        setDialogState(() {
+                          tempWidth = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('취소'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('적용'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (applied == true) {
+      setState(() {
+        _selectedColor = tempColor;
+        _strokeWidth = tempWidth;
+      });
+    }
+  }
 
   void _startStroke(Offset position) {
     final Stroke stroke = Stroke(color: _selectedColor, width: _strokeWidth)
@@ -52,6 +115,32 @@ class _CanvasScreenState extends State<CanvasScreen> {
       _inProgress = null;
     });
   }
+
+  void _undoStroke() {
+    if (_strokes.isEmpty) {
+      return;
+    }
+    setState(() {
+      _strokes = List<Stroke>.from(_strokes)..removeLast();
+    });
+  }
+
+  static const List<Color> _availableColors = <Color>[
+    Colors.black,
+    Colors.blueGrey,
+    Colors.white,
+    Colors.red,
+    Colors.orange,
+    Colors.amber,
+    Colors.yellow,
+    Colors.green,
+    Colors.cyan,
+    Colors.blue,
+    Colors.purple,
+    Colors.pink,
+    Colors.brown,
+    Colors.grey,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -96,17 +185,32 @@ class _CanvasScreenState extends State<CanvasScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: FilledButton.tonal(
-                    onPressed: null,
-                    child: Text('색상 선택'),
+                    onPressed: _selectColor,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: _selectedColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.black12),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text('색상 선택'),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: FilledButton.tonal(
-                    onPressed: null,
-                    child: Text('지우기'),
+                    onPressed: _undoStroke,
+                    child: const Text('지우기'),
                   ),
                 ),
                 const SizedBox(width: 12),

@@ -10,9 +10,9 @@
 - [x] Implement "새로 만들기" to reset canvas state and clear any generated icon preview.
 
 ## 3. Color Selection & Tools
-- Add color picker dialog (predefined palette or `flutter_colorpicker`) that updates the active brush color.
-- Provide "지우기" to clear current strokes; optionally support undo if time allows.
-- Keep UI responsive on mobile and desktop targets (flexible button row with icons + labels).
+- [x] Add color picker dialog (predefined palette or `flutter_colorpicker`) that updates the active brush color.
+- [x] Provide "지우기" to clear current strokes; optionally support undo if time allows.
+- [x] Keep UI responsive on mobile and desktop targets (flexible button row with icons + labels).
 
 ## 4. Icon Generation Workflow
 - On "아이콘 만들기", open dialog with prefilled prompt template tied to current concept and allow edits.
