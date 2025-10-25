@@ -14,14 +14,12 @@ class DrawingCanvas extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: CustomPaint(
-        painter: _StrokePainter(
-          strokes: strokes,
-          inProgress: inProgress,
-        ),
-        size: Size.infinite,
+    return CustomPaint(
+      painter: _StrokePainter(
+        strokes: strokes,
+        inProgress: inProgress,
       ),
+      size: Size.infinite,
     );
   }
 }

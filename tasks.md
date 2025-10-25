@@ -15,9 +15,9 @@
 - [x] Keep UI responsive on mobile and desktop targets (flexible button row with icons + labels).
 
 ## 4. Icon Generation Workflow
-- On "아이콘 만들기", open dialog with prefilled prompt template tied to current concept and allow edits.
-- Capture canvas as PNG bytes via `ui.Image`/`PictureRecorder`, encode base64, and bundle with prompt for Gemini request.
-- Show loading overlay while awaiting API; handle errors with retry messaging.
+- [x] On "아이콘 만들기", open dialog with prefilled prompt template tied to current concept and allow edits.
+- [x] Capture canvas as PNG bytes via `ui.Image`/`PictureRecorder`, encode base64, and bundle with prompt for Gemini request.
+- [x] Show loading overlay while awaiting API; handle errors with retry messaging.
 
 ## 5. Result Handling
 - Render generated icon preview in a modal or bottom sheet with "다운로드" (save to device using `path_provider` + platform channels if needed) and "다시 생성" (issue repeat call with same prompt).
