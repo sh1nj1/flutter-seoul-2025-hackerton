@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
@@ -11,16 +10,16 @@ import '../config/image_provider_config.dart';
 import '../config/openai_config.dart';
 
 class IconGenerator {
-  IconGenerator({http.Client? httpClient, GenerativeModel? geminiModel})
-      : _client = httpClient ?? http.Client(),
-        _geminiModel = geminiModel;
+  IconGenerator({http.Client? httpClient})
+      : _client = httpClient ?? http.Client();
 
   final http.Client _client;
-  GenerativeModel? _geminiModel;
 
   static const String _endpoint = 'https://api.openai.com/v1/images/edits';
   static const String _openAIModel = 'gpt-image-1';
-  static const String _geminiModelName = 'gemini-1.5-flash';
+  static const String _geminiModelName = 'gemini-2.0-flash';
+  static const String _geminiEndpointBase =
+      'https://generativelanguage.googleapis.com/v1beta/models';
 
   Future<Uint8List> generateIcon({
     required String prompt,
@@ -99,32 +98,64 @@ class IconGenerator {
       throw StateError('Missing Gemini API key.');
     }
 
-    _geminiModel ??= GenerativeModel(
-      model: _geminiModelName,
-      apiKey: apiKey,
-      generationConfig: GenerationConfig(
-        responseMimeType: 'image/png',
-      ),
+    final Uri url = Uri.parse(
+      '$_geminiEndpointBase/$_geminiModelName:generateContent?key=$apiKey',
     );
 
-    final Content content = Content.multi(<Part>[
-      TextPart(prompt),
-      DataPart('image/png', sketchBytes),
-    ]);
+    final Map<String, dynamic> body = <String, dynamic>{
+      'contents': <Map<String, dynamic>>[
+        <String, dynamic>{
+          'role': 'user',
+          'parts': <Map<String, dynamic>>[
+            <String, dynamic>{
+              'inline_data': <String, dynamic>{
+                'mime_type': 'image/png',
+                'data': base64Encode(sketchBytes),
+              },
+            },
+            <String, dynamic>{'text': prompt},
+          ],
+        },
+      ],
+      'generationConfig': <String, dynamic>{
+        'response_modalities': <String>['IMAGE'],
+      },
+    };
 
-    final GenerateContentResponse response =
-        await _geminiModel!.generateContent(<Content>[content]);
+    final http.Response response = await _client.post(
+      url,
+      headers: <String, String>{'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
 
-    debugPrint('Gemini response: $response');
+    debugPrint('Gemini response status: ${response.statusCode}');
+    debugPrint('Gemini response body: ${response.body}');
 
-    if (response.candidates == null) {
-      throw StateError('No candidates returned by Gemini.');
+    if (response.statusCode != 200) {
+      throw StateError('Gemini error ${response.statusCode}: ${response.body}');
     }
 
-    for (final Candidate candidate in response.candidates!) {
-      for (final Part part in candidate.content.parts) {
-        if (part is DataPart) {
-          return Uint8List.fromList(part.bytes);
+    final Map<String, dynamic> payload =
+        jsonDecode(response.body) as Map<String, dynamic>;
+    final List<dynamic> candidates =
+        payload['candidates'] as List<dynamic>? ?? <dynamic>[];
+    for (final dynamic candidate in candidates) {
+      final Map<String, dynamic>? candidateMap =
+          candidate as Map<String, dynamic>?;
+      final Map<String, dynamic>? content =
+          candidateMap?['content'] as Map<String, dynamic>?;
+      final List<dynamic>? parts = content?['parts'] as List<dynamic>?;
+      if (parts == null) {
+        continue;
+      }
+      for (final dynamic part in parts) {
+        final Map<String, dynamic>? partMap = part as Map<String, dynamic>?;
+        final Map<String, dynamic>? inline =
+            (partMap?['inlineData'] as Map<String, dynamic>?) ??
+                (partMap?['inline_data'] as Map<String, dynamic>?);
+        final String? data = inline?['data'] as String?;
+        if (data != null && data.isNotEmpty) {
+          return base64Decode(data);
         }
       }
     }
